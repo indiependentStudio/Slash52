@@ -1,4 +1,4 @@
-// 2023, indiependent.Studio. All rights reserved.
+// 2023, indiependent.studio. All rights reserved.
 
 #pragma once
 
@@ -10,17 +10,11 @@ UCLASS()
 class SLASH52_API AItem : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	AItem();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+	virtual void BeginPlay() override;
 };
