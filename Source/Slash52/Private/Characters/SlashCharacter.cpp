@@ -15,14 +15,16 @@ ASlashCharacter::ASlashCharacter()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->TargetArmLength = 300.f;
-	SpringArm->AddRelativeRotation(FRotator(-40.f, 0.f, 0.f));
+	SpringArm->AddRelativeRotation(FRotator(-30.f, 0.f, 0.f));
+	SpringArm->bUsePawnControlRotation = true;
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(SpringArm);
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-	bUseControllerRotationPitch = true;
-	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 }
 
 void ASlashCharacter::BeginPlay()
@@ -53,11 +55,9 @@ void ASlashCharacter::Move(const FInputActionValue& Value)
 void ASlashCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D CurrentValue = Value.Get<FVector2D>();
-	if (GetController())
-	{
-		AddControllerYawInput(CurrentValue.X);
-		AddControllerPitchInput(CurrentValue.Y);
-	}
+
+	AddControllerYawInput(CurrentValue.X);
+	AddControllerPitchInput(CurrentValue.Y);
 }
 
 void ASlashCharacter::Tick(float DeltaTime)
