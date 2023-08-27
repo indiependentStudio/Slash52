@@ -33,9 +33,9 @@ ABird::ABird()
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(SpringArm);
 
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
-	bUseControllerRotationPitch = true;
-	bUseControllerRotationYaw = true;
+	// AutoPossessPlayer = EAutoReceiveInput::Player0;
+	// bUseControllerRotationPitch = true;
+	// bUseControllerRotationYaw = true;
 }
 
 void ABird::BeginPlay()
