@@ -14,6 +14,9 @@ class SLASH52_API AWeapon : public AItem
 {
 	GENERATED_BODY()
 
+public:
+	void Equip(USceneComponent* InParent, FName InSocketName);
+	
 protected:
 	// No UFUNCTION when overriding
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp,

@@ -11,5 +11,7 @@ public class Slash52EditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		ExtraModuleNames.AddRange( new string[] { "Slash52" } );
+
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 	}
 }

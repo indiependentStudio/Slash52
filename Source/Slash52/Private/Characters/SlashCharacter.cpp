@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
+#include "Items/Weapons/Weapon.h"
 
 ASlashCharacter::ASlashCharacter()
 {
@@ -88,6 +89,14 @@ void ASlashCharacter::Jump()
 	Super::Jump();
 }
 
+void ASlashCharacter::EKeyPressed()
+{
+	if (AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem))
+	{
+		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+	}
+}
+
 void ASlashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -108,5 +117,8 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Jump);
+
+		// Equipping
+		EnhancedInputComponent->BindAction(EKeyPressedAction, ETriggerEvent::Triggered, this, &ASlashCharacter::EKeyPressed);
 	}
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIHelpers.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
@@ -12,6 +13,7 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 class UGroomComponent;
+class AItem;
 
 UCLASS()
 class SLASH52_API ASlashCharacter : public ACharacter
@@ -40,9 +42,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> JumpAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	TObjectPtr<UInputAction> EKeyPressedAction;
+	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
+	void EKeyPressed();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -56,4 +62,11 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category="Hair")
 	TObjectPtr<UGroomComponent> Eyebrows;
+
+	UPROPERTY(VisibleInstanceOnly)
+	TObjectPtr<AItem> OverlappingItem;
+
+public:
+	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 };
+
