@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIHelpers.h"
+#include "CharacterTypes.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
@@ -66,7 +67,10 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverlappingItem;
 
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
+	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 };
 

@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "SlashAnimInstance.generated.h"
 
+enum class ECharacterState : uint8;
 class UCharacterMovementComponent;
 class ASlashCharacter;
 /**
@@ -26,12 +27,15 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<ASlashCharacter> SlashCharacter;
 
-	UPROPERTY(BlueprintReadOnly, Category="Movement")
+	UPROPERTY(BlueprintReadOnly, Category="Movement |")
 	TObjectPtr<UCharacterMovementComponent> SlashCharacterMovement;
 
-	UPROPERTY(BlueprintReadOnly,Category="Movement")
+	UPROPERTY(BlueprintReadOnly,Category="Movement |")
 	float GroundSpeed;
 
-	UPROPERTY(BlueprintReadOnly,Category="Movement")
+	UPROPERTY(BlueprintReadOnly,Category="Movement |")
 	bool bIsFalling;
+
+	UPROPERTY(BlueprintReadOnly, Category="Movement | Character State")
+	ECharacterState CharacterState;
 };
