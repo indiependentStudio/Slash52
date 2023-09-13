@@ -45,11 +45,25 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> EKeyPressedAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	TObjectPtr<UInputAction> AttackAction;
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EKeyPressed();
+	void Attack();
+
+	/*
+	 * Play montage functions
+	 */
+	void PlayAttackMontage();
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
+	bool CanAttack();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -68,6 +82,15 @@ private:
 	TObjectPtr<AItem> OverlappingItem;
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
+	EActionState ActionState = EActionState::EAS_Unoccupied;
+
+	/*
+	 * Animation montages
+	 */
+	UPROPERTY(EditDefaultsOnly, Category="Montages")
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }

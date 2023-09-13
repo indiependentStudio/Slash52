@@ -8,6 +8,12 @@
 
 class USphereComponent;
 
+enum class EItemState : uint8
+{
+	EIS_Hovering,
+	EIS_Equipped
+};
+
 UCLASS()
 class SLASH52_API AItem : public AActor
 {
@@ -29,6 +35,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
 
+	EItemState ItemState = EItemState::EIS_Hovering;
+
 	UFUNCTION(BlueprintPure)
 	float TransformedSin();
 
@@ -49,9 +57,7 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"), Category="Exposed | Info")
 	float RunningTime = 0;
-
-
-
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
 };

@@ -1,0 +1,103 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+abstract class ACharacter {
+    #virtual void BeginPlay() override
+    +virtual void Jump()
+    +virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override
+}
+'ACharacter::Jump -right-> ASlashCharacter::Jump
+'AActor::Tick --> ASlashCharacter::Tick
+'ACharacter::SetupPlayerInputComponent --> ASlashCharacter::SetupPlayerInputComponent
+
+
+class ASlashCharacter {
+    -SpringArm : USpringArmComponent UPROPERTY
+    -ViewCamera : UCameraComponent UPROPERTY
+    -Hair : UGroomComponent UPROPERTY
+    -Eyebrows : UGroomComponent UPROPERTY
+    -OverlappingItem : Item UPROPERTY
+    -CharacterState : ECharacterState
+    #CharacterMappingContext : UInputMappingContext UPROPERTY
+    #MoveAction : UInputAction UPROPERTY
+    #LookAction : UInputAction UPROPERTY
+    #JumpAction : UInputAction UPROPERTY
+    #EKeyPressedAction : UInputAction UPROPERTY
+    #AttackAction: UInputAction UPROPERTY
+    #virtual void BeginPlay() override
+    #void Move(const FInputActionValue& Value)
+    #void Look(const FInputActionValue& Value)
+    #virtual void Jump() override;
+    #void EKeyPressed();
+    #void Attack();
+    #void PlayAttackMontage();
+    #void AttackEnd() UFUNCTION
+    #bool CanAttack()
+    +ASlashCharacter()
+    +void SetOverlappingItem(AItem* Item)
+    +ECharacterState GetCharacterState() const
+    +virtual void Tick(float DeltaTime) override
+    +virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override
+}
+ASlashCharacter::ECharacterState -u-> ECharacterState
+ASlashCharacter --> USlashAnimationInstance::SlashCharacter
+
+abstract class UAnimInstance {
+    +virtual void NativeInitializeAnimation()
+    +virtual void NativeUpdateAnimation(float DeltaSeconds)
+}
+
+class USlashAnimationInstance {
+    +virtual void NativeInitializeAnimation() override
+    +virtual void NativeUpdateAnimation(float DeltaSeconds) override
+    +SlashCharacter : ASlashCharacter UPROPERTY
+    +SlashCharacterMovement : UCharacterMovementComponent UPROPERTY
+    +GroundSpeed : float UPROPERTY
+    +bIsFalling : bool UPROPERTY
+    +CharacterState : ECharacterState UPROPERTY
+}
+
+abstract class AActor {
+    +virtual void Tick(float DeltaSeconds)
+    #virtual void BeginPlay()
+}
+
+class AItem {
+    -RunningTime : float UPROPERTY
+    -Sphere : USphereComponent UPROPERTY
+    #Amplitude : float UPROPERTY
+    #TimeConstant: float UPROPERTY
+    #ItemMesh : UStaticMeshComponent UPROPERTY
+    #virtual void BeginPlay() override
+    #float TransformedSin() UFUNCTION Pure
+    #float TransformedCos() UFUNCTION Pure
+    #virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp,
+     		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) UFUNCTION
+    #virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+     		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) UFUNCTION
+    +AItem()
+    +virtual void Tick(float DeltaTime) override
+}
+
+class AWeapon {
+    #virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp,
+     		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override
+    #virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+     		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override
+    +void Equip(USceneComponent* InParent, FName InSocketName);
+}
+
+
+
+enum ECharacterState {
+    ECS_Unequipped
+    ECS_EquippedOneHandedWeapon
+    ECS_EquippedTwoHandedWeapon
+}
+
+ACharacter <|-- ASlashCharacter
+UAnimInstance <|-- USlashAnimationInstance
+AItem <|-- AWeapon
+AActor <|-- AItem
+
+@enduml
