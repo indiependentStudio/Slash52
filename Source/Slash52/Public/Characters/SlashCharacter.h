@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 
+class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
@@ -59,11 +60,14 @@ protected:
 	 * Play montage functions
 	 */
 	void PlayAttackMontage();
+	void PlayEquipMontage(FName SectionName);
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
 	bool CanAttack();
+	bool CanDisarm();
+	bool CanArm();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -81,16 +85,23 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverlappingItem;
 
+	UPROPERTY(VisibleInstanceOnly, Category="Weapon")
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
-	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Weapon", meta=(AllowPrivateAccess="true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
+
+	UPROPERTY(VisibleAnywhere, Category="Weapon")
+	TObjectPtr<AWeapon> EquippedWeapon;
 
 	/*
 	 * Animation montages
 	 */
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Montages")
+	TObjectPtr<UAnimMontage> EquipMontage;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
