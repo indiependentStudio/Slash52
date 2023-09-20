@@ -15,6 +15,7 @@ class SLASH52_API AWeapon : public AItem
 	GENERATED_BODY()
 
 public:
+	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 	void Equip(USceneComponent* InParent, FName InSocketName);
 	
 protected:
@@ -24,4 +25,8 @@ protected:
 
 	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
+
+private:
+	UPROPERTY(EditAnywhere, Category="Weapon Properties")
+	TObjectPtr<USoundBase> EquipSound;
 };

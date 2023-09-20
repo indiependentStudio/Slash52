@@ -103,6 +103,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> EquipMontage;
 
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
+
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
