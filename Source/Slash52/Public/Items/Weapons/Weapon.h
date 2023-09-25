@@ -20,6 +20,8 @@ public:
 	void AttachMeshToSocket(USceneComponent* InParent, FName InSocketName);
 	void Equip(USceneComponent* InParent, FName InSocketName);
 
+	TArray<TObjectPtr<AActor>> IgnoreActors;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -48,6 +50,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	TObjectPtr<UBoxComponent> WeaponBox;
+
+	
 
 	// Stylistic choice to put getters and setters at the bottom
 public:

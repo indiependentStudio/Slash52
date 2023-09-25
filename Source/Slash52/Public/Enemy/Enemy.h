@@ -16,9 +16,30 @@ public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void DrawDirectionalHitVectors(FVector Forward, FVector ToHit, double Theta, FVector CrossProduct,
+	                               FString HitDirection);
+	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
 protected:
 	virtual void BeginPlay() override;
+
+	/*
+	 * Play montage functions
+	 */
+	void PlayHitReactMontage(const FName& SectionName);
+	
+private:
+	/*
+	 * Animation montages
+	 */
+	UPROPERTY(EditDefaultsOnly, Category="Montages")
+	TObjectPtr<UAnimMontage> HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	TObjectPtr<USoundBase> HitSound;
+
+	UPROPERTY(EditAnywhere, Category="VFX")
+	TObjectPtr<UParticleSystem> HitParticles;
 };
