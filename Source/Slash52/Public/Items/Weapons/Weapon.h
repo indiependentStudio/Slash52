@@ -43,7 +43,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	TObjectPtr<USceneComponent> BoxTraceEnd;
-	
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& FieldLocation);
+
 private:
 	UPROPERTY(EditAnywhere, Category="Weapon Properties")
 	TObjectPtr<USoundBase> EquipSound;
@@ -51,9 +54,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Weapon Properties")
 	TObjectPtr<UBoxComponent> WeaponBox;
 
-	
 
 	// Stylistic choice to put getters and setters at the bottom
 public:
-	FORCEINLINE UBoxComponent* GetWeaponBox() const { return  WeaponBox; }
+	FORCEINLINE UBoxComponent* GetWeaponBox() const { return WeaponBox; }
 };
