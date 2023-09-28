@@ -3,7 +3,6 @@
 
 #include "Items/Weapons/Weapon.h"
 
-#include "Characters/SlashCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/HitInterface.h"
@@ -78,7 +77,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	{
 		ActorsToIgnore.AddUnique(Actor);
 	}
-	
+
 	FHitResult BoxHit;
 
 	UKismetSystemLibrary::BoxTraceSingle(
@@ -97,15 +96,12 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 	if (BoxHit.GetActor())
 	{
-		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
-		if (HitInterface)
+		if (Cast<IHitInterface>(BoxHit.GetActor()))
 		{
-			HitInterface->GetHit(BoxHit.ImpactPoint);
+			IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
 		}
 		IgnoreActors.AddUnique(BoxHit.GetActor());
 
 		CreateFields(BoxHit.ImpactPoint);
 	}
 }
-
-
