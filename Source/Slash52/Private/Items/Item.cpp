@@ -1,10 +1,12 @@
 // 2023, indiependent.studio. All rights reserved.
 
 #include "Items/Item.h"
+#include "Items/Item.h"
 
 #include "Characters/SlashCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Slash52/DebugMacros.h"
+#include "NiagaraComponent.h"
 
 AItem::AItem()
 {
@@ -16,7 +18,8 @@ AItem::AItem()
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
 
-	
+	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
+	EmbersEffect->SetupAttachment(GetRootComponent());
 }
 
 void AItem::BeginPlay()
