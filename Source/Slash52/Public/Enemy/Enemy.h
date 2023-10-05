@@ -7,6 +7,9 @@
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
+class UHealthBarComponent;
+class UAttributeComponent;
+
 UCLASS()
 class SLASH52_API AEnemy : public ACharacter, public IHitInterface
 {
@@ -42,4 +45,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="VFX")
 	TObjectPtr<UParticleSystem> HitParticles;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAttributeComponent> AttributeComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UHealthBarComponent> HealthBarWidget;
+
 };
