@@ -36,8 +36,11 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, FAttachmentTransformRules::SnapToTargetIncludingScale, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
+// called by SlashCharacter when picking up Weapon
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
 {
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator); // used to specify who is doing damage with this weapon
 	AttachMeshToSocket(InParent, InSocketName);
 	ItemState = EItemState::EIS_Equipped;
 
@@ -106,8 +109,18 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		{
 			IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
 		}
+		// Make sure we only register one hit on an enemy per swing
 		IgnoreActors.AddUnique(BoxHit.GetActor());
 
+		// BP function that drives our custom physics fields
 		CreateFields(BoxHit.ImpactPoint);
+
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigatorController(),
+			this,
+			UDamageType::StaticClass()
+		);
 	}
 }

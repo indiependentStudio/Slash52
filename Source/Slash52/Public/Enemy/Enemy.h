@@ -19,11 +19,24 @@ public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void DrawDirectionalHitVectors(FVector Forward, FVector ToHit, double Theta, FVector CrossProduct,
-	                               FString HitDirection);
+
+	void DrawDirectionalHitVectors(
+		FVector Forward,
+		FVector ToHit,
+		double Theta,
+		FVector CrossProduct,
+		FString HitDirection
+	);
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+
+	virtual float TakeDamage(
+		float DamageAmount,
+		FDamageEvent const& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser
+	) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,7 +45,7 @@ protected:
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName);
-	
+
 private:
 	/*
 	 * Animation montages
@@ -51,5 +64,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarComponent;
-
 };

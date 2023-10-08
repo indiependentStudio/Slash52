@@ -29,7 +29,7 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HealthBarComponent)
+	if (AttributeComponent && HealthBarComponent)
 	{
 		HealthBarComponent->SetHealthPercent(1.f);
 	}
@@ -140,4 +140,15 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, ImpactPoint);
 	}
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                         AActor* DamageCauser)
+{
+	if (AttributeComponent && HealthBarComponent)
+	{
+		AttributeComponent->ReceiveDamage(DamageAmount);
+		HealthBarComponent->SetHealthPercent(AttributeComponent->GetHealthPercent());
+	}
+	return DamageAmount;
 }
