@@ -124,7 +124,7 @@ void ASlashCharacter::PlayAttackMontage()
 	if (AnimInstance && AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage);
-		const int32 Selection = FMath::RandRange(0, 1);
+		const int32 Selection = FMath::RandRange(0, 2);
 		FName SectionName;
 		switch (Selection)
 		{
@@ -133,6 +133,9 @@ void ASlashCharacter::PlayAttackMontage()
 			break;
 		case 1:
 			SectionName = FName("Attack2");
+			break;
+		case 2:
+			SectionName = FName("Attack3");
 			break;
 		default:
 			SectionName = FName("Attack1");

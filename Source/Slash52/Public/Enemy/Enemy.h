@@ -50,7 +50,6 @@ private:
 	TObjectPtr<UAttributeComponent> AttributeComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	// TObjectPtr<UHealthBarComponent> HealthBarWidget;
 	TObjectPtr<UHealthBarComponent> HealthBarComponent;
 
 };

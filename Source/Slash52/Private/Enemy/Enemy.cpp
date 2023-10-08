@@ -21,8 +21,6 @@ AEnemy::AEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
-	// HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
-	// HealthBarWidget->SetupAttachment(GetRootComponent());
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
 }
@@ -31,7 +29,10 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetHealthPercent(1.f);
+	}
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
@@ -47,11 +48,6 @@ void AEnemy::PlayHitReactMontage(const FName& SectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if (HealthBarComponent)
-	{
-		HealthBarComponent->SetHealthPercent(.1f);
-	}
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
