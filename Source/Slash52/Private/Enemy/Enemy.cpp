@@ -3,6 +3,8 @@
 
 #include "Enemy/Enemy.h"
 
+#include <string>
+
 #include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "HUD/HealthBarComponent.h"
@@ -35,6 +37,44 @@ void AEnemy::BeginPlay()
 	}
 }
 
+void AEnemy::Die()
+{
+	// TODO: play montage
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && DeathMontage)
+	{
+		int32 SectionNum;
+		AnimInstance->Montage_Play(DeathMontage);
+		AnimInstance->Montage_JumpToSection(ChooseRandomMontageSection(DeathMontage, SectionNum),
+		                                    DeathMontage);
+
+		switch (SectionNum)
+		{
+		case 1:
+			DeathPose = EDeathPose::EDP_Death1;
+			break;
+		case 2:
+			DeathPose = EDeathPose::EDP_Death2;
+			break;
+		case 3:
+			DeathPose = EDeathPose::EDP_Death3;
+			break;
+		case 4:
+			DeathPose = EDeathPose::EDP_Death4;
+			break;
+		case 5:
+			DeathPose = EDeathPose::EDP_Death5;
+			break;
+		case 6:
+			DeathPose = EDeathPose::EDP_Death6;
+			break;
+		default:
+			DeathPose = EDeathPose::EDP_Death1;
+			break;
+		}
+	}
+}
+
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -43,6 +83,17 @@ void AEnemy::PlayHitReactMontage(const FName& SectionName)
 		AnimInstance->Montage_Play(HitReactMontage);
 		AnimInstance->Montage_JumpToSection(SectionName, HitReactMontage);
 	}
+}
+
+FName AEnemy::ChooseRandomMontageSection(UAnimMontage* AnimMontage, int32& OutSectionNumberId)
+{
+	if (AnimMontage)
+	{
+		OutSectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
+		FString SectionNameAsString = FString("Death").Append(FString::FromInt(OutSectionNumberId));
+		return FName(SectionNameAsString);
+	}
+	return FName("Default");
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -125,7 +176,14 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	// DRAW_SPHERE_COLOR(ImpactPoint, FColor::Yellow);
 
-	DirectionalHitReact(ImpactPoint);
+	if (AttributeComponent && AttributeComponent->IsAlive())
+	{
+		DirectionalHitReact(ImpactPoint);
+	}
+	else if (AttributeComponent)
+	{
+		Die();
+	}
 
 	if (HitSound)
 	{

@@ -62,6 +62,7 @@ protected:
 	 */
 	void PlayAttackMontage();
 	void PlayEquipMontage(const FName& SectionName);
+	static FName ChooseRandomMontageSection(UAnimMontage* AnimMontage);
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();

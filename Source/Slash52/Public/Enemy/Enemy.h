@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Characters/CharacterTypes.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
@@ -39,12 +40,18 @@ public:
 	) override;
 
 protected:
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+	
 	virtual void BeginPlay() override;
 
+	void Die();
+	
 	/*
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName);
+	FName ChooseRandomMontageSection(UAnimMontage* AnimMontage, int32& OutSectionNumberId);
 
 private:
 	/*
@@ -53,6 +60,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> HitReactMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category="Montages")
+	TObjectPtr<UAnimMontage> DeathMontage;
+	
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	TObjectPtr<USoundBase> HitSound;
 
@@ -64,4 +74,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarComponent;
+
+	
 };

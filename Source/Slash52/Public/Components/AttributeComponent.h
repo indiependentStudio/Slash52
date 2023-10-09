@@ -32,4 +32,6 @@ public:
 	// Health Getter and Setter
 	float GetHealthPercent();
 	void ReceiveDamage(float Damage);
+	
+	bool IsAlive();
 };

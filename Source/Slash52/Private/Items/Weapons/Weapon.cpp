@@ -105,6 +105,14 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 	if (BoxHit.GetActor())
 	{
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigatorController(),
+			this,
+			UDamageType::StaticClass()
+		);
+
 		if (Cast<IHitInterface>(BoxHit.GetActor()))
 		{
 			IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
@@ -114,13 +122,5 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 		// BP function that drives our custom physics fields
 		CreateFields(BoxHit.ImpactPoint);
-
-		UGameplayStatics::ApplyDamage(
-			BoxHit.GetActor(),
-			Damage,
-			GetInstigatorController(),
-			this,
-			UDamageType::StaticClass()
-		);
 	}
 }

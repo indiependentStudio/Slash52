@@ -124,23 +124,7 @@ void ASlashCharacter::PlayAttackMontage()
 	if (AnimInstance && AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage);
-		const int32 Selection = FMath::RandRange(0, 2);
-		FName SectionName;
-		switch (Selection)
-		{
-		case 0:
-			SectionName = FName("Attack1");
-			break;
-		case 1:
-			SectionName = FName("Attack2");
-			break;
-		case 2:
-			SectionName = FName("Attack3");
-			break;
-		default:
-			SectionName = FName("Attack1");
-		}
-		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+		AnimInstance->Montage_JumpToSection(ChooseRandomMontageSection(AttackMontage), AttackMontage);
 	}
 }
 
@@ -152,6 +136,17 @@ void ASlashCharacter::PlayEquipMontage(const FName& SectionName)
 		AnimInstance->Montage_Play(EquipMontage);
 		AnimInstance->Montage_JumpToSection(SectionName, EquipMontage);
 	}
+}
+
+FName ASlashCharacter::ChooseRandomMontageSection(UAnimMontage* AnimMontage)
+{
+	if (AnimMontage)
+	{
+		const int32 SectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
+		const FString SectionNameAsString = FString("Attack").Append(FString::FromInt(SectionNumberId));
+		return FName(SectionNameAsString);
+	}
+	return FName("Default");
 }
 
 void ASlashCharacter::AttackEnd()
