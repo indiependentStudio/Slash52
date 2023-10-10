@@ -75,5 +75,11 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarComponent;
 
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	double CombatRadius = 500;
+
 	
 };

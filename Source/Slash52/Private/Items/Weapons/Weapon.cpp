@@ -51,7 +51,8 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOw
 
 	if (Sphere)
 	{
-		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Sphere->DestroyComponent();
 	}
 
 	if (EmbersEffect)
