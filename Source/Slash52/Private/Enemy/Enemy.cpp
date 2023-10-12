@@ -5,12 +5,15 @@
 
 #include <string>
 
+#include "AIController.h"
+#include "NavigationPath.h"
 #include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Slash52/DebugMacros.h"
 
 AEnemy::AEnemy()
@@ -41,6 +44,25 @@ void AEnemy::BeginPlay()
 	{
 		HealthBarComponent->SetHealthPercent(1.f);
 		HealthBarComponent->SetVisibility(false);
+	}
+
+	EnemyController = Cast<AAIController>(GetController());
+	if (EnemyController && PatrolTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+
+		FNavPathSharedPtr NavPath;
+		EnemyController->MoveTo(MoveRequest, &NavPath);
+
+		// Make this a reference so we don't have to make a copy
+		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		for (auto& Point : PathPoints)
+		{
+			const FVector& Location = Point.Location;
+			DrawDebugSphere(GetWorld(), Location, 12.f, 12, FColor::Green, false, 10.f);
+		}
 	}
 }
 
@@ -85,6 +107,14 @@ void AEnemy::Die()
 	SetLifeSpan(6.f);
 }
 
+bool AEnemy::InTargetRange(AActor* Target, double Radius)
+{
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Length();
+	DRAW_SPHERE_SINGLE_FRAME(GetActorLocation());
+	DRAW_SPHERE_SINGLE_FRAME(Target->GetActorLocation());
+	return DistanceToTarget <= Radius;
+}
+
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -112,12 +142,40 @@ void AEnemy::Tick(float DeltaTime)
 
 	if (CombatTarget)
 	{
-		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Length();
-
-		if (DistanceToTarget > CombatRadius && HealthBarComponent)
+		if (!InTargetRange(CombatTarget, CombatRadius) && HealthBarComponent)
 		{
 			HealthBarComponent->SetVisibility(false);
 			CombatTarget = nullptr;
+		}
+	}
+
+	if (PatrolTarget && EnemyController)
+	{
+		if (InTargetRange(PatrolTarget, PatrolRadius))
+		{
+			// make sure we don't keep randomly selected the TargetPoint we're already at
+			TArray<AActor*> ValidTargets;
+			for (AActor* Target : PatrolTargets)
+			{
+				if (Target != PatrolTarget)
+				{
+					ValidTargets.AddUnique(Target);
+				}
+			}
+			
+			const int32 NumPatrolTargets = ValidTargets.Num();
+			if (NumPatrolTargets > 0)
+			{
+				const int32 TargetSelection = FMath::RandRange(0, NumPatrolTargets - 1);
+				AActor* Target = ValidTargets[TargetSelection];
+				PatrolTarget = Target;
+
+				FAIMoveRequest MoveRequest;
+				MoveRequest.SetGoalActor(PatrolTarget);
+				MoveRequest.SetAcceptanceRadius(15.f);
+
+				EnemyController->MoveTo(MoveRequest);
+			}
 		}
 	}
 }
@@ -236,6 +294,6 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	}
 
 	CombatTarget = EventInstigator->GetPawn();
-	
+
 	return DamageAmount;
 }
