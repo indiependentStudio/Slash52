@@ -47,23 +47,7 @@ void AEnemy::BeginPlay()
 	}
 
 	EnemyController = Cast<AAIController>(GetController());
-	if (EnemyController && PatrolTarget)
-	{
-		FAIMoveRequest MoveRequest;
-		MoveRequest.SetGoalActor(PatrolTarget);
-		MoveRequest.SetAcceptanceRadius(15.f);
-
-		FNavPathSharedPtr NavPath;
-		EnemyController->MoveTo(MoveRequest, &NavPath);
-
-		// Make this a reference so we don't have to make a copy
-		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
-		for (auto& Point : PathPoints)
-		{
-			const FVector& Location = Point.Location;
-			DrawDebugSphere(GetWorld(), Location, 12.f, 12, FColor::Green, false, 10.f);
-		}
-	}
+	MoveToTarget(PatrolTarget);
 }
 
 void AEnemy::Die()
@@ -109,10 +93,44 @@ void AEnemy::Die()
 
 bool AEnemy::InTargetRange(AActor* Target, double Radius)
 {
+	if (Target == nullptr) { return false; }
 	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Length();
 	DRAW_SPHERE_SINGLE_FRAME(GetActorLocation());
 	DRAW_SPHERE_SINGLE_FRAME(Target->GetActorLocation());
 	return DistanceToTarget <= Radius;
+}
+
+void AEnemy::MoveToTarget(AActor* Target)
+{
+	if (EnemyController == nullptr || Target == nullptr) return;
+
+	FAIMoveRequest MoveRequest;
+	MoveRequest.SetGoalActor(Target);
+	MoveRequest.SetAcceptanceRadius(15.f);
+
+	EnemyController->MoveTo(MoveRequest);
+}
+
+TObjectPtr<AActor> AEnemy::ChoosePatrolTarget()
+{
+	// make sure we don't keep randomly selected the TargetPoint we're already at
+	TArray<AActor*> ValidTargets;
+	for (AActor* Target : PatrolTargets)
+	{
+		if (Target != PatrolTarget)
+		{
+			ValidTargets.AddUnique(Target);
+		}
+	}
+
+	const int32 NumPatrolTargets = ValidTargets.Num();
+	if (NumPatrolTargets > 0)
+	{
+		const int32 TargetSelection = FMath::RandRange(0, NumPatrolTargets - 1);
+		AActor* Target = ValidTargets[TargetSelection];
+		return Target;
+	}
+	return nullptr;
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
@@ -136,48 +154,37 @@ FName AEnemy::ChooseRandomMontageSection(UAnimMontage* AnimMontage, int32& OutSe
 	return FName("Default");
 }
 
+void AEnemy::PatrolTimerFinished()
+{
+	MoveToTarget(PatrolTarget);
+}
+
+// If we move away from an Enemy, hide the HealthBar
+void AEnemy::CheckCombatTarget()
+{
+	if (!InTargetRange(CombatTarget, CombatRadius) && HealthBarComponent)
+	{
+		HealthBarComponent->SetVisibility(false);
+		CombatTarget = nullptr;
+	}
+}
+
+// If we're within range of a PatrolTarget, pick a new one, wait, then move to it
+void AEnemy::CheckPatrolTarget()
+{
+	if (InTargetRange(PatrolTarget, PatrolRadius))
+	{
+		PatrolTarget = ChoosePatrolTarget();
+		GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::PatrolTimerFinished, FMath::RandRange(3.f, 9.f));
+	}
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CombatTarget)
-	{
-		if (!InTargetRange(CombatTarget, CombatRadius) && HealthBarComponent)
-		{
-			HealthBarComponent->SetVisibility(false);
-			CombatTarget = nullptr;
-		}
-	}
-
-	if (PatrolTarget && EnemyController)
-	{
-		if (InTargetRange(PatrolTarget, PatrolRadius))
-		{
-			// make sure we don't keep randomly selected the TargetPoint we're already at
-			TArray<AActor*> ValidTargets;
-			for (AActor* Target : PatrolTargets)
-			{
-				if (Target != PatrolTarget)
-				{
-					ValidTargets.AddUnique(Target);
-				}
-			}
-			
-			const int32 NumPatrolTargets = ValidTargets.Num();
-			if (NumPatrolTargets > 0)
-			{
-				const int32 TargetSelection = FMath::RandRange(0, NumPatrolTargets - 1);
-				AActor* Target = ValidTargets[TargetSelection];
-				PatrolTarget = Target;
-
-				FAIMoveRequest MoveRequest;
-				MoveRequest.SetGoalActor(PatrolTarget);
-				MoveRequest.SetAcceptanceRadius(15.f);
-
-				EnemyController->MoveTo(MoveRequest);
-			}
-		}
-	}
+	CheckCombatTarget();
+	CheckPatrolTarget();
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -216,8 +223,8 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 
 	// Forward . ToHit = |Forward| |ToHit| * cos(theta)
 	// Forward = 1, ToHit = 1, so Forward . ToHit = cos(theta) (ie dot product)
-	const double cosTheta = FVector::DotProduct(Forward, ToHit);
-	double Theta = FMath::Acos(cosTheta);
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+	double Theta = FMath::Acos(CosTheta);
 	Theta = FMath::RadiansToDegrees(Theta);
 
 	// Forward x ToHit = |Forward| |ToHit| * sin(theta) * n
@@ -246,7 +253,6 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 		HitDirection = "From Right";
 	}
 	PlayHitReactMontage(Section);
-
 
 	// DrawDirectionalHitVectors(Forward, ToHit, Theta, CrossProduct, HitDirection);
 }

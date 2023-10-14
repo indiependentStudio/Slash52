@@ -49,6 +49,10 @@ protected:
 	void Die();
 
 	bool InTargetRange(AActor* Target, double Radius);
+
+	void MoveToTarget(AActor* Target);
+
+	TObjectPtr<AActor> ChoosePatrolTarget();
 	
 	/*
 	 * Play montage functions
@@ -99,4 +103,9 @@ private:
 
 	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
 	TArray<TObjectPtr<AActor>> PatrolTargets;
+
+	FTimerHandle PatrolTimer;
+	void PatrolTimerFinished();
+	void CheckCombatTarget();
+	void CheckPatrolTarget();
 };
