@@ -111,7 +111,7 @@ void AEnemy::MoveToTarget(AActor* Target)
 	EnemyController->MoveTo(MoveRequest);
 }
 
-TObjectPtr<AActor> AEnemy::ChoosePatrolTarget()
+AActor* AEnemy::ChoosePatrolTarget()
 {
 	// make sure we don't keep randomly selected the TargetPoint we're already at
 	TArray<AActor*> ValidTargets;
@@ -277,11 +277,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 
 	if (HitSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(
-			this,
-			HitSound,
-			ImpactPoint
-		);
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound, ImpactPoint);
 	}
 
 	if (HitParticles)
@@ -290,6 +286,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 	}
 }
 
+// Called by Weapon's ApplyDamage
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
                          AActor* DamageCauser)
 {

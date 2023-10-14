@@ -49,10 +49,8 @@ protected:
 	void Die();
 
 	bool InTargetRange(AActor* Target, double Radius);
-
 	void MoveToTarget(AActor* Target);
-
-	TObjectPtr<AActor> ChoosePatrolTarget();
+	AActor* ChoosePatrolTarget();
 	
 	/*
 	 * Play montage functions
