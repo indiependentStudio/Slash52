@@ -8,6 +8,7 @@
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
+class UPawnSensingComponent;
 class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
@@ -51,6 +52,10 @@ protected:
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
 	AActor* ChoosePatrolTarget();
+
+	// UF because this will be bound to a delegate
+	UFUNCTION()
+	void PawnSeen(APawn* SeenPawn);
 	
 	/*
 	 * Play montage functions
@@ -89,14 +94,17 @@ private:
 	UPROPERTY(EditAnywhere, Category="AI Navigation")
 	double PatrolRadius = 200.f;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
+
 	/* 
 	 * Navigation
 	 */
 	UPROPERTY()
 	TObjectPtr<AAIController> EnemyController;
 	
-	// Current Patrol Target
-	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
+	// Current Patrol Target - temp exposed to BP to work on Enemy seeing Player
+	UPROPERTY(EditInstanceOnly, Category="AI Navigation", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
 	TObjectPtr<AActor> PatrolTarget;
 
 	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
@@ -106,4 +114,6 @@ private:
 	void PatrolTimerFinished();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
+
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 };

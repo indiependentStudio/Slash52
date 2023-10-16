@@ -7,6 +7,7 @@
 
 #include "AIController.h"
 #include "NavigationPath.h"
+#include "Characters/SlashCharacter.h"
 #include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,6 +15,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Perception/PawnSensingComponent.h"
 #include "Slash52/DebugMacros.h"
 
 AEnemy::AEnemy()
@@ -34,6 +36,10 @@ AEnemy::AEnemy()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
+
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensing"));
+	PawnSensingComponent->SightRadius = 2000.f;
+	PawnSensingComponent->SetPeripheralVisionAngle(55.f);
 }
 
 void AEnemy::BeginPlay()
@@ -48,6 +54,11 @@ void AEnemy::BeginPlay()
 
 	EnemyController = Cast<AAIController>(GetController());
 	MoveToTarget(PatrolTarget);
+
+	if (PawnSensingComponent)
+	{
+		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
+	}
 }
 
 void AEnemy::Die()
@@ -133,6 +144,20 @@ AActor* AEnemy::ChoosePatrolTarget()
 	return nullptr;
 }
 
+void AEnemy::PawnSeen(APawn* SeenPawn)
+{
+	if (EnemyState == EEnemyState::EES_Chasing) { return; }
+
+	if (SeenPawn->ActorHasTag(FName("SlashCharacter")))
+	{
+		EnemyState = EEnemyState::EES_Chasing;
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f; // expose to BP
+		CombatTarget = SeenPawn;
+		MoveToTarget(CombatTarget);
+	}
+}
+
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -183,8 +208,14 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CheckCombatTarget();
-	CheckPatrolTarget();
+	if (EnemyState > EEnemyState::EES_Patrolling)
+	{
+		CheckCombatTarget();
+	}
+	else
+	{
+		CheckPatrolTarget();
+	}
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -277,7 +308,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 
 	if (HitSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this,HitSound, ImpactPoint);
+		UGameplayStatics::PlaySoundAtLocation(this, HitSound, ImpactPoint);
 	}
 
 	if (HitParticles)
