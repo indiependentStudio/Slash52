@@ -44,7 +44,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
-	
+
 	virtual void BeginPlay() override;
 
 	void Die();
@@ -56,7 +56,7 @@ protected:
 	// UF because this will be bound to a delegate
 	UFUNCTION()
 	void PawnSeen(APawn* SeenPawn);
-	
+
 	/*
 	 * Play montage functions
 	 */
@@ -72,7 +72,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> DeathMontage;
-	
+
 	UPROPERTY(EditAnywhere, Category="Sounds")
 	TObjectPtr<USoundBase> HitSound;
 
@@ -94,6 +94,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="AI Navigation")
 	double PatrolRadius = 200.f;
 
+	UPROPERTY(EditAnywhere)
+	double AttackRadius = 150.f;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
 
@@ -102,7 +105,7 @@ private:
 	 */
 	UPROPERTY()
 	TObjectPtr<AAIController> EnemyController;
-	
+
 	// Current Patrol Target - temp exposed to BP to work on Enemy seeing Player
 	UPROPERTY(EditInstanceOnly, Category="AI Navigation", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
 	TObjectPtr<AActor> PatrolTarget;

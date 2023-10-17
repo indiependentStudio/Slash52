@@ -150,11 +150,17 @@ void AEnemy::PawnSeen(APawn* SeenPawn)
 
 	if (SeenPawn->ActorHasTag(FName("SlashCharacter")))
 	{
-		EnemyState = EEnemyState::EES_Chasing;
 		GetWorldTimerManager().ClearTimer(PatrolTimer);
 		GetCharacterMovement()->MaxWalkSpeed = 300.f; // expose to BP
 		CombatTarget = SeenPawn;
-		MoveToTarget(CombatTarget);
+		
+		if (EnemyState != EEnemyState::EES_Attacking)
+		{
+			EnemyState = EEnemyState::EES_Chasing;
+			MoveToTarget(CombatTarget);
+			UE_LOG(LogTemp, Warning, TEXT("Player seen."));
+		}
+		
 	}
 }
 
@@ -187,10 +193,32 @@ void AEnemy::PatrolTimerFinished()
 // If we move away from an Enemy, hide the HealthBar
 void AEnemy::CheckCombatTarget()
 {
-	if (!InTargetRange(CombatTarget, CombatRadius) && HealthBarComponent)
+	if (!InTargetRange(CombatTarget, CombatRadius))
 	{
-		HealthBarComponent->SetVisibility(false);
 		CombatTarget = nullptr;
+		if (HealthBarComponent)
+		{
+			HealthBarComponent->SetVisibility(false);
+		}
+		EnemyState = EEnemyState::EES_Patrolling;
+		GetCharacterMovement()->MaxWalkSpeed = 125.f;
+		MoveToTarget(PatrolTarget);
+		UE_LOG(LogTemp, Warning, TEXT("Lose Interest"));
+	}
+	else if (!InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
+	{
+		// outside Attack Range, chase character
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		MoveToTarget(CombatTarget);
+		UE_LOG(LogTemp, Warning, TEXT("Chase Player"));
+	}
+	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	{
+		// inside Attack Range
+		EnemyState = EEnemyState::EES_Attacking;
+		// TODO: Attack Montage
+		UE_LOG(LogTemp, Warning, TEXT("Attack!"));
 	}
 }
 
