@@ -11,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
+#include "Items/Weapons/Weapon.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/PawnSensingComponent.h"
 
@@ -54,6 +55,13 @@ void AEnemy::BeginPlay()
 	{
 		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
 	}
+
+	if (UWorld* World = GetWorld(); World && WeaponClass)
+	{
+		AWeapon* DefaultWeapon = World->SpawnActor<AWeapon>(WeaponClass);
+		DefaultWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+		EquippedWeapon = DefaultWeapon;
+	}
 }
 
 void AEnemy::Die()
@@ -95,6 +103,7 @@ void AEnemy::Die()
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->DestroyComponent();
 	SetLifeSpan(6.f);
+	
 }
 
 bool AEnemy::InTargetRange(AActor* Target, double Radius)
@@ -271,4 +280,12 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	MoveToTarget(CombatTarget);
 
 	return DamageAmount;
+}
+
+void AEnemy::Destroyed()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+	}
 }

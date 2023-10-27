@@ -32,6 +32,8 @@ public:
 		AActor* DamageCauser
 	) override;
 
+	virtual void Destroyed() override;
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
@@ -86,4 +88,7 @@ private:
 	void CheckPatrolTarget();
 
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> WeaponClass;
 };
