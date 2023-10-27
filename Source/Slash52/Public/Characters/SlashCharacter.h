@@ -3,13 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIHelpers.h"
+#include "BaseCharacter.h"
 #include "CharacterTypes.h"
 #include "InputActionValue.h"
-#include "GameFramework/Character.h"
 #include "SlashCharacter.generated.h"
 
-class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
@@ -18,7 +16,7 @@ class UGroomComponent;
 class AItem;
 
 UCLASS()
-class SLASH52_API ASlashCharacter : public ACharacter
+class SLASH52_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -26,9 +24,6 @@ public:
 	ASlashCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,24 +45,21 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> AttackAction;
-	
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void EKeyPressed();
-	void Attack();
+	virtual void Attack() override;
 
 	/*
 	 * Play montage functions
 	 */
-	void PlayAttackMontage();
+	virtual void PlayAttackMontage() override;
 	void PlayEquipMontage(const FName& SectionName);
-	static FName ChooseRandomMontageSection(UAnimMontage* AnimMontage);
 
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
-
-	bool CanAttack();
+	virtual void AttackEnd() override;
+	virtual bool CanAttack() override;
 	bool CanDisarm();
 	bool CanArm();
 
@@ -80,7 +72,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Hair")
 	TObjectPtr<UGroomComponent> Hair;
-	
+
 	UPROPERTY(VisibleAnywhere, Category="Hair")
 	TObjectPtr<UGroomComponent> Eyebrows;
 
@@ -93,15 +85,9 @@ private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Weapon", meta=(AllowPrivateAccess="true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
-	UPROPERTY(VisibleAnywhere, Category="Weapon")
-	TObjectPtr<AWeapon> EquippedWeapon;
-
 	/*
 	 * Animation montages
 	 */
-	UPROPERTY(EditDefaultsOnly, Category="Montages")
-	TObjectPtr<UAnimMontage> AttackMontage;
-
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> EquipMontage;
 
@@ -118,4 +104,3 @@ public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 };
-

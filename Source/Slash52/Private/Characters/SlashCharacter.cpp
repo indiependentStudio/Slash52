@@ -5,11 +5,10 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GroomComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GroomComponent.h"
-#include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
 
 ASlashCharacter::ASlashCharacter()
@@ -140,17 +139,6 @@ void ASlashCharacter::PlayEquipMontage(const FName& SectionName)
 	}
 }
 
-FName ASlashCharacter::ChooseRandomMontageSection(UAnimMontage* AnimMontage)
-{
-	if (AnimMontage)
-	{
-		const int32 SectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
-		const FString SectionNameAsString = FString("Attack").Append(FString::FromInt(SectionNumberId));
-		return FName(SectionNameAsString);
-	}
-	return FName("Default");
-}
-
 void ASlashCharacter::AttackEnd()
 {
 	ActionState = EActionState::EAS_Unoccupied;
@@ -231,14 +219,5 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ASlashCharacter::Attack);
-	}
-}
-
-void ASlashCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
-{
-	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
-	{
-		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnabled);
-		EquippedWeapon->IgnoreActors.Empty();
 	}
 }

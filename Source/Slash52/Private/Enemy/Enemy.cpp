@@ -3,20 +3,16 @@
 
 #include "Enemy/Enemy.h"
 
-#include <string>
+#include <Kismet/GameplayStatics.h>
 
 #include "AIController.h"
-#include "NavigationPath.h"
 #include "Characters/SlashCharacter.h"
 #include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Perception/PawnSensingComponent.h"
-#include "Slash52/DebugMacros.h"
 
 AEnemy::AEnemy()
 {
@@ -28,7 +24,6 @@ AEnemy::AEnemy()
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
-	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
 
@@ -153,36 +148,14 @@ void AEnemy::PawnSeen(APawn* SeenPawn)
 		GetWorldTimerManager().ClearTimer(PatrolTimer);
 		GetCharacterMovement()->MaxWalkSpeed = 300.f; // expose to BP
 		CombatTarget = SeenPawn;
-		
+
 		if (EnemyState != EEnemyState::EES_Attacking)
 		{
 			EnemyState = EEnemyState::EES_Chasing;
 			MoveToTarget(CombatTarget);
 			// UE_LOG(LogTemp, Warning, TEXT("Player seen."));
 		}
-		
 	}
-}
-
-void AEnemy::PlayHitReactMontage(const FName& SectionName)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HitReactMontage)
-	{
-		AnimInstance->Montage_Play(HitReactMontage);
-		AnimInstance->Montage_JumpToSection(SectionName, HitReactMontage);
-	}
-}
-
-FName AEnemy::ChooseRandomMontageSection(UAnimMontage* AnimMontage, int32& OutSectionNumberId)
-{
-	if (AnimMontage)
-	{
-		OutSectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
-		FString SectionNameAsString = FString("Death").Append(FString::FromInt(OutSectionNumberId));
-		return FName(SectionNameAsString);
-	}
-	return FName("Default");
 }
 
 void AEnemy::PatrolTimerFinished()
@@ -251,70 +224,6 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AEnemy::DrawDirectionalHitVectors(const FVector Forward, const FVector ToHit, double Theta,
-                                       const FVector CrossProduct, FString HitDirection)
-{
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green,
-		                                 FString::Printf(TEXT("Theta: %f %s"), Theta, *HitDirection));
-	}
-
-	UKismetSystemLibrary::DrawDebugArrow(this,
-	                                     GetActorLocation(), GetActorLocation() + Forward * 60.f, 5.f, FColor::Red,
-	                                     60.f);
-
-	UKismetSystemLibrary::DrawDebugArrow(this,
-	                                     GetActorLocation(), GetActorLocation() + ToHit * 60.f, 5.f, FColor::Green,
-	                                     60.f);
-
-	UKismetSystemLibrary::DrawDebugArrow(this,
-	                                     GetActorLocation(), GetActorLocation() + CrossProduct * 60.f, 5.f,
-	                                     FColor::Blue, 60.f);
-}
-
-void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
-{
-	const FVector Forward = GetActorForwardVector();
-	// Lower impact point to enemy's Actor Location Z (so when we draw our debug arrows they are parallel to the ground)
-	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
-	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
-
-	// Forward . ToHit = |Forward| |ToHit| * cos(theta)
-	// Forward = 1, ToHit = 1, so Forward . ToHit = cos(theta) (ie dot product)
-	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	double Theta = FMath::Acos(CosTheta);
-	Theta = FMath::RadiansToDegrees(Theta);
-
-	// Forward x ToHit = |Forward| |ToHit| * sin(theta) * n
-	// If CP points down, theta is -ve
-	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
-	if (CrossProduct.Z < 0)
-	{
-		Theta *= -1.f;
-	}
-
-	FString HitDirection = "From Back";
-	FName Section("FromBack");
-	if (Theta >= -45.f && Theta < 45.f)
-	{
-		Section = FName("FromFront");
-		HitDirection = "From Front";
-	}
-	else if (Theta >= -135.f && Theta < -45.f)
-	{
-		Section = FName("FromLeft");
-		HitDirection = "From Left";
-	}
-	else if (Theta >= 45.f && Theta < 135.f)
-	{
-		Section = FName("FromRight");
-		HitDirection = "From Right";
-	}
-	PlayHitReactMontage(Section);
-
-	// DrawDirectionalHitVectors(Forward, ToHit, Theta, CrossProduct, HitDirection);
-}
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
@@ -344,7 +253,7 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, ImpactPoint);
 	}
 }
-	
+
 // Called by Weapon's ApplyDamage
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
                          AActor* DamageCauser)
