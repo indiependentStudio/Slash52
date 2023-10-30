@@ -121,6 +121,8 @@ void ASlashCharacter::EKeyPressed()
 
 void ASlashCharacter::PlayAttackMontage()
 {
+	Super::PlayAttackMontage();
+	
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && AttackMontage)
 	{
@@ -185,6 +187,8 @@ void ASlashCharacter::FinishEquipping()
 
 void ASlashCharacter::Attack()
 {
+	Super::Attack();
+	
 	if (CanAttack())
 	{
 		ActionState = EActionState::EAS_Attacking;

@@ -38,6 +38,23 @@ AEnemy::AEnemy()
 	PawnSensingComponent->SetPeripheralVisionAngle(55.f);
 }
 
+void AEnemy::Attack()
+{
+	Super::Attack();
+	PlayAttackMontage();
+}
+
+void AEnemy::PlayAttackMontage()
+{
+	Super::PlayAttackMontage();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(ChooseRandomMontageSection(AttackMontage), AttackMontage);
+	}
+}
+
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
@@ -121,7 +138,7 @@ void AEnemy::MoveToTarget(AActor* Target)
 
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(15.f);
+	MoveRequest.SetAcceptanceRadius(50.f);
 
 	EnemyController->MoveTo(MoveRequest);
 }
@@ -201,6 +218,7 @@ void AEnemy::CheckCombatTarget()
 		EnemyState = EEnemyState::EES_Attacking;
 		// TODO: Attack Montage
 		// UE_LOG(LogTemp, Warning, TEXT("Attack!"));
+		Attack();
 	}
 }
 
