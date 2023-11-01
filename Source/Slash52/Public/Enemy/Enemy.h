@@ -20,9 +20,7 @@ class SLASH52_API AEnemy : public ABaseCharacter
 public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
+	
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(
@@ -36,14 +34,22 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
-	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+	TEnumAsByte<EDeathPose> DeathPose;
 
+	UPROPERTY(BlueprintReadOnly)
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float DeathLifeSpan = 8.f;
+
+	virtual bool CanAttack() override;
 	virtual void Attack() override;
-	virtual void PlayAttackMontage() override;
+	virtual void HandleDamage(float DamageAmount) override;
 	
 	virtual void BeginPlay() override;
 
 	virtual void Die() override;
+	virtual int32 PlayDeathMontage() override;
 
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTarget(AActor* Target);
@@ -61,7 +67,7 @@ private:
 	TObjectPtr<AActor> CombatTarget;
 
 	UPROPERTY(EditAnywhere, Category="Combat")
-	double CombatRadius = 500.f;
+	double CombatRadius = 1500.f;
 
 	UPROPERTY(EditAnywhere, Category="AI Navigation")
 	double PatrolRadius = 200.f;
@@ -90,8 +96,41 @@ private:
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
 
-	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> WeaponClass;
+
+	/* AI Behavior */
+	void HideHealthBar();
+	void ShowHealthBar();
+	void LoseInterest();
+	void StartPatrolling();
+	bool IsOutsideCombatRadius();
+	void ChaseTarget();
+	bool IsOutsideAttackRadius();
+	bool IsChasing();
+	bool IsInsideAttackRadius();
+	bool IsAttacking();
+	void ClearPatrolTimer();
+	bool IsDead();
+	bool IsEngaged();
+
+	/* Combat */
+	void StartAttackTimer();
+	void ClearAttackTimer();
+
+	FTimerHandle AttackTimer;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float AttackMin = 0.5f;
+	
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float AttackMax = 1.f;
+
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float PatrollingSpeed = 125.f;
+	
+	UPROPERTY(EditAnywhere, Category="Combat")
+	float ChasingSpeed = 300.f;
 };
+
+

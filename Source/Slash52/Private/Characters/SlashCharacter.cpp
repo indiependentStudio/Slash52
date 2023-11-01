@@ -119,17 +119,17 @@ void ASlashCharacter::EKeyPressed()
 	}
 }
 
-void ASlashCharacter::PlayAttackMontage()
-{
-	Super::PlayAttackMontage();
-	
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && AttackMontage)
-	{
-		AnimInstance->Montage_Play(AttackMontage);
-		AnimInstance->Montage_JumpToSection(ChooseRandomMontageSection(AttackMontage), AttackMontage);
-	}
-}
+// void ASlashCharacter::PlayAttackMontage()
+// {
+// 	Super::PlayAttackMontage();
+// 	
+// 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+// 	if (AnimInstance && AttackMontage)
+// 	{
+// 		AnimInstance->Montage_Play(AttackMontage);
+// 		AnimInstance->Montage_JumpToSection(ChooseRandomMontageSection(AttackMontage), AttackMontage);
+// 	}
+// }
 
 void ASlashCharacter::PlayEquipMontage(const FName& SectionName)
 {

@@ -6,6 +6,7 @@
 #include "Components/AttributeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Items/Weapons/Weapon.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 ABaseCharacter::ABaseCharacter()
@@ -24,30 +25,23 @@ void ABaseCharacter::Attack()
 {
 }
 
-void ABaseCharacter::PlayAttackMontage()
+int32 ABaseCharacter::PlayAttackMontage()
 {
+	return PlayRandomMontageSection(AttackMontage, AttackMontageSections);
 }
 
-FName ABaseCharacter::ChooseRandomMontageSection(UAnimMontage* AnimMontage)
+int32 ABaseCharacter::PlayRandomMontageSection(UAnimMontage* Montage, const TArray<FName>& SectionNames)
 {
-	if (AnimMontage)
-	{
-		const int32 SectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
-		const FString SectionNameAsString = FString("Attack").Append(FString::FromInt(SectionNumberId));
-		return FName(SectionNameAsString);
-	}
-	return FName("Default");
+	if (SectionNames.Num() <= 0) return -1;
+	const int32 MaxSectionIndex = SectionNames.Num() - 1;
+	const int32 Selection = FMath::RandRange(0, MaxSectionIndex);
+	PlayMontageSection(Montage, SectionNames[Selection]);
+	return Selection;
 }
 
-FName ABaseCharacter::ChooseRandomMontageSection(UAnimMontage* AnimMontage, int32& OutSectionNumberId)
+int32 ABaseCharacter::PlayDeathMontage()
 {
-	if (AnimMontage)
-	{
-		OutSectionNumberId = FMath::RandRange(1, AnimMontage->CompositeSections.Num());
-		FString SectionNameAsString = FString("Death").Append(FString::FromInt(OutSectionNumberId));
-		return FName(SectionNameAsString);
-	}
-	return FName("Default");
+	return PlayRandomMontageSection(DeathMontage, DeathMontageSections);
 }
 
 void ABaseCharacter::PlayHitReactMontage(const FName& SectionName)
@@ -71,6 +65,11 @@ void ABaseCharacter::AttackEnd()
 
 void ABaseCharacter::Die()
 {
+}
+
+bool ABaseCharacter::IsAlive()
+{
+	return AttributeComponent && AttributeComponent->IsAlive();
 }
 
 void ABaseCharacter::Tick(float DeltaTime)
@@ -151,3 +150,39 @@ void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint)
 
 	// DrawDirectionalHitVectors(Forward, ToHit, Theta, CrossProduct, HitDirection);
 }
+
+void ABaseCharacter::PlayHitSound(const FVector& ImpactPoint)
+{
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, HitSound, ImpactPoint);
+	}
+}
+
+void ABaseCharacter::SpawnHitParticles(const FVector& ImpactPoint)
+{
+	if (HitParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, ImpactPoint);
+	}
+}
+
+void ABaseCharacter::HandleDamage(float DamageAmount)
+{
+	if (AttributeComponent)
+	{
+		AttributeComponent->ReceiveDamage(DamageAmount);
+	}
+}
+
+void ABaseCharacter::PlayMontageSection(UAnimMontage* AnimMontage, const FName& SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AnimMontage)
+	{
+		AnimInstance->Montage_Play(AnimMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, AnimMontage);
+	}
+}
+
+
