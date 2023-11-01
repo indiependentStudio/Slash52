@@ -43,16 +43,17 @@ bool AEnemy::CanAttack()
 	const bool bCanAttack =
 		IsInsideAttackRadius() &&
 		!IsAttacking() &&
+		!IsEngaged() &&
 		!IsDead();
 	return bCanAttack;
 }
 
 void AEnemy::Attack()
 {
+	EnemyState = EEnemyState::EES_Engaged;
 	Super::Attack();
 	PlayAttackMontage();
 }
-
 
 
 void AEnemy::HandleDamage(float DamageAmount)
@@ -62,6 +63,12 @@ void AEnemy::HandleDamage(float DamageAmount)
 	{
 		HealthBarComponent->SetHealthPercent(AttributeComponent->GetHealthPercent());
 	}
+}
+
+void AEnemy::AttackEnd()
+{
+	EnemyState = EEnemyState::EES_NoState;
+	CheckCombatTarget();
 }
 
 void AEnemy::BeginPlay()

@@ -45,6 +45,7 @@ protected:
 	virtual bool CanAttack() override;
 	virtual void Attack() override;
 	virtual void HandleDamage(float DamageAmount) override;
+	virtual void AttackEnd() override;
 	
 	virtual void BeginPlay() override;
 
