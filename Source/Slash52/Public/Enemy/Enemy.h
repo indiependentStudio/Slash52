@@ -19,9 +19,9 @@ class SLASH52_API AEnemy : public ABaseCharacter
 
 public:
 	AEnemy();
+
+	/* <AActor> */
 	virtual void Tick(float DeltaTime) override;
-	
-	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(
 		float DamageAmount,
@@ -31,76 +31,48 @@ public:
 	) override;
 
 	virtual void Destroyed() override;
+	/* </AActor> */
+
+	/* <IHitInterface> */
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	/* </IHitInterface> */
 
 protected:
+	/* <AActor> */
+	virtual void BeginPlay() override;
+	/* </AActor> */
+
+	/* <ABaseCharacter> */
+	virtual bool CanAttack() override;
+	virtual void Attack() override;
+	virtual void HandleDamage(float DamageAmount) override;
+	virtual void AttackEnd() override;
+	virtual void Die() override;
+	virtual int32 PlayDeathMontage() override;
+	/* </ABaseCharacter> */
+
+	bool InTargetRange(AActor* Target, double Radius);
+	void MoveToTarget(AActor* Target);
+	AActor* ChoosePatrolTarget();
+	
+	// UF because this callback will be bound to a delegate
+	UFUNCTION()
+	void PawnSeen(APawn* SeenPawn);
+
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<EDeathPose> DeathPose;
 
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
-
-	UPROPERTY(EditAnywhere, Category="Combat")
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	float DeathLifeSpan = 8.f;
 
-	virtual bool CanAttack() override;
-	virtual void Attack() override;
-	virtual void HandleDamage(float DamageAmount) override;
-	virtual void AttackEnd() override;
-	
-	virtual void BeginPlay() override;
-
-	virtual void Die() override;
-	virtual int32 PlayDeathMontage() override;
-
-	bool InTargetRange(AActor* Target, double Radius);
-	void MoveToTarget(AActor* Target);
-	AActor* ChoosePatrolTarget();
-
-	// UF because this will be bound to a delegate
-	UFUNCTION()
-	void PawnSeen(APawn* SeenPawn);
-
 private:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UHealthBarComponent> HealthBarComponent;
-
-	UPROPERTY()
-	TObjectPtr<AActor> CombatTarget;
-
-	UPROPERTY(EditAnywhere, Category="Combat")
-	double CombatRadius = 1500.f;
-
-	UPROPERTY(EditAnywhere, Category="AI Navigation")
-	double PatrolRadius = 200.f;
-
-	UPROPERTY(EditAnywhere)
-	double AttackRadius = 150.f;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
-
-	/* 
-	 * Navigation
-	 */
-	UPROPERTY()
-	TObjectPtr<AAIController> EnemyController;
-
-	// Current Patrol Target - temp exposed to BP to work on Enemy seeing Player
-	UPROPERTY(EditInstanceOnly, Category="AI Navigation", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
-	TObjectPtr<AActor> PatrolTarget;
-
-	UPROPERTY(EditInstanceOnly, Category="AI Navigation")
-	TArray<TObjectPtr<AActor>> PatrolTargets;
-
-	FTimerHandle PatrolTimer;
-	void PatrolTimerFinished();
+	/* AI Behavior */
+	void InitializeEnemy();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AWeapon> WeaponClass;
-
-	/* AI Behavior */
+	void PatrolTimerFinished();
 	void HideHealthBar();
 	void ShowHealthBar();
 	void LoseInterest();
@@ -114,24 +86,53 @@ private:
 	void ClearPatrolTimer();
 	bool IsDead();
 	bool IsEngaged();
-
-	/* Combat */
 	void StartAttackTimer();
 	void ClearAttackTimer();
-
+	void SpawnDefaultWeapon();
+	
+	FTimerHandle PatrolTimer;
 	FTimerHandle AttackTimer;
 
-	UPROPERTY(EditAnywhere, Category="Combat")
-	float AttackMin = 0.5f;
-	
-	UPROPERTY(EditAnywhere, Category="Combat")
-	float AttackMax = 1.f;
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
+	float AttackMinDelay = 0.5f;
 
-	UPROPERTY(EditAnywhere, Category="Combat")
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
+	float AttackMaxDelay = 1.f;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UHealthBarComponent> HealthBarComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
+
+	UPROPERTY()
+	TObjectPtr<AAIController> EnemyController;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
+
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
+	double CombatRadius = 1500.f;
+
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
+	double AttackRadius = 150.f;
+
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	float PatrollingSpeed = 125.f;
-	
-	UPROPERTY(EditAnywhere, Category="Combat")
+
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	float ChasingSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere, Category="AI | Navigation")
+	double PatrolRadius = 200.f;
+
+	// Current Patrol Target - temp exposed to BP Graph to work on Enemy seeing Player
+	UPROPERTY(EditInstanceOnly, Category="AI | Navigation", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
+	TObjectPtr<AActor> PatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category="AI | Navigation")
+	TArray<TObjectPtr<AActor>> PatrolTargets;
+
+	UPROPERTY(EditAnywhere, Category="Weapon")
+	TSubclassOf<AWeapon> WeaponClass;
 };
-
-

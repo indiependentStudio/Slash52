@@ -42,6 +42,7 @@ void ABird::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Edited out for testing helping someone. Put back later.
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<

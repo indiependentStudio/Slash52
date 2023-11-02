@@ -22,11 +22,24 @@ class SLASH52_API ASlashCharacter : public ABaseCharacter
 
 public:
 	ASlashCharacter();
-	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
 	virtual void BeginPlay() override;
+
+	/* Input */
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	virtual void Jump() override;
+	void EKeyPressed();
+	
+	/* Play montages */
+	void PlayEquipMontage(const FName& SectionName);
+
+	/* Attacking and Arming */
+	virtual void Attack() override;
+	virtual void AttackEnd() override;
+	virtual bool CanAttack() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputMappingContext> CharacterMappingContext;
@@ -46,24 +59,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputAction> AttackAction;
 
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	virtual void Jump() override;
-	void EKeyPressed();
-	virtual void Attack() override;
-
-	/*
-	 * Play montage functions
-	 */
-	//virtual void PlayAttackMontage() override;
-	void PlayEquipMontage(const FName& SectionName);
-
-	virtual void AttackEnd() override;
-	virtual bool CanAttack() override;
+private:
 	bool CanDisarm();
 	bool CanArm();
+	void Disarm();
+	void Arm();
+	void EquipWeapon(AWeapon* Weapon);
 
-private:
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToBack();
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHand();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArm;
 
@@ -91,14 +102,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Montages")
 	TObjectPtr<UAnimMontage> EquipMontage;
 
-	UFUNCTION(BlueprintCallable)
-	void Disarm();
-
-	UFUNCTION(BlueprintCallable)
-	void Arm();
-
-	UFUNCTION(BlueprintCallable)
-	void FinishEquipping();
+	
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }

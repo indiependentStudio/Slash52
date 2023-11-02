@@ -3,8 +3,6 @@
 
 #include "Enemy/Enemy.h"
 
-#include <Kismet/GameplayStatics.h>
-
 #include "AIController.h"
 #include "Characters/SlashCharacter.h"
 #include "Components/AttributeComponent.h"
@@ -23,7 +21,6 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 	HealthBarComponent = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
@@ -55,7 +52,6 @@ void AEnemy::Attack()
 	PlayAttackMontage();
 }
 
-
 void AEnemy::HandleDamage(float DamageAmount)
 {
 	Super::HandleDamage(DamageAmount);
@@ -71,30 +67,31 @@ void AEnemy::AttackEnd()
 	CheckCombatTarget();
 }
 
-void AEnemy::BeginPlay()
+void AEnemy::SpawnDefaultWeapon()
 {
-	Super::BeginPlay();
-
-	if (AttributeComponent && HealthBarComponent)
-	{
-		HealthBarComponent->SetHealthPercent(1.f);
-		HealthBarComponent->SetVisibility(false);
-	}
-
-	EnemyController = Cast<AAIController>(GetController());
-	MoveToTarget(PatrolTarget);
-
-	if (PawnSensingComponent)
-	{
-		PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
-	}
-
 	if (UWorld* World = GetWorld(); World && WeaponClass)
 	{
 		AWeapon* DefaultWeapon = World->SpawnActor<AWeapon>(WeaponClass);
 		DefaultWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
 		EquippedWeapon = DefaultWeapon;
 	}
+}
+
+void AEnemy::InitializeEnemy()
+{
+	EnemyController = Cast<AAIController>(GetController());
+	MoveToTarget(PatrolTarget);
+	HideHealthBar();
+	SpawnDefaultWeapon();
+}
+
+void AEnemy::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (PawnSensingComponent) PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
+
+	InitializeEnemy();
 }
 
 void AEnemy::Die()
@@ -215,7 +212,7 @@ bool AEnemy::IsEngaged()
 void AEnemy::StartAttackTimer()
 {
 	EnemyState = EEnemyState::EES_Attacking;
-	const float AttackTime = FMath::RandRange(AttackMin, AttackMax);
+	const float AttackTime = FMath::RandRange(AttackMinDelay, AttackMaxDelay);
 	GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackTime);
 }
 
@@ -244,6 +241,7 @@ void AEnemy::CheckCombatTarget()
 }
 
 // If we're within range of a PatrolTarget, pick a new one, wait, then move to it
+// Magic number, cough cough, move to UPROPERTY
 void AEnemy::CheckPatrolTarget()
 {
 	if (InTargetRange(PatrolTarget, PatrolRadius))

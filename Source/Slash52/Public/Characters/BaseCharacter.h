@@ -18,10 +18,7 @@ class SLASH52_API ABaseCharacter : public ACharacter, public IHitInterface
 public:
 	ABaseCharacter();
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
-
+	
 	void DrawDirectionalHitVectors(
 		FVector Forward,
 		FVector ToHit,
@@ -29,27 +26,51 @@ public:
 		FVector CrossProduct,
 		FString HitDirection
 	);
-	
 
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void Attack();
 	virtual bool CanAttack();
+	virtual void HandleDamage(float DamageAmount);
+	virtual void Die();
+	bool IsAlive();
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
 
-	virtual void Die();
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
+	
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	void PlayHitSound(const FVector& ImpactPoint);
 	void SpawnHitParticles(const FVector& ImpactPoint);
-	virtual void HandleDamage(float DamageAmount);
-	void PlayMontageSection(UAnimMontage* AnimMontage, const FName& SectionName);
+	
+	/*
+	 * Play montage functions
+	 */
+	void PlayHitReactMontage(const FName& SectionName);
 	virtual int32 PlayAttackMontage();
-	int32 PlayRandomMontageSection(UAnimMontage* Montage, const TArray<FName>& SectionNames);
 	virtual int32 PlayDeathMontage();
-	bool IsAlive();
+
+	UPROPERTY(VisibleAnywhere, Category="Weapon")
+	TObjectPtr<AWeapon> EquippedWeapon;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAttributeComponent> AttributeComponent;
+
+private:
+	/*
+	 * Play montage functions
+	 */
+	void PlayMontageSection(UAnimMontage* AnimMontage, const FName& SectionName);
+	int32 PlayRandomMontageSection(UAnimMontage* Montage, const TArray<FName>& SectionNames);
+	
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	TObjectPtr<USoundBase> HitSound;
+
+	UPROPERTY(EditAnywhere, Category="VFX")
+	TObjectPtr<UParticleSystem> HitParticles;
 
 	/*
 	 * Animation montages
@@ -68,22 +89,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Combat")
 	TArray<FName> DeathMontageSections;
-
-	/*
-	 * Play montage functions
-	 */
-	void PlayHitReactMontage(const FName& SectionName);
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon")
-	TObjectPtr<AWeapon> EquippedWeapon;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UAttributeComponent> AttributeComponent;
-
-private:
-	UPROPERTY(EditAnywhere, Category="Sounds")
-	TObjectPtr<USoundBase> HitSound;
-
-	UPROPERTY(EditAnywhere, Category="VFX")
-	TObjectPtr<UParticleSystem> HitParticles;
 };
