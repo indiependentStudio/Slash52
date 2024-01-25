@@ -66,10 +66,10 @@ private:
 	void PlayMontageSection(UAnimMontage* AnimMontage, const FName& SectionName);
 	int32 PlayRandomMontageSection(UAnimMontage* Montage, const TArray<FName>& SectionNames);
 	
-	UPROPERTY(EditAnywhere, Category="Sounds")
+	UPROPERTY(EditAnywhere, Category="Combat")
 	TObjectPtr<USoundBase> HitSound;
 
-	UPROPERTY(EditAnywhere, Category="VFX")
+	UPROPERTY(EditAnywhere, Category="Combat")
 	TObjectPtr<UParticleSystem> HitParticles;
 
 	/*

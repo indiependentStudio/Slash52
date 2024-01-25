@@ -36,46 +36,86 @@ void AWeapon::AttachMeshToSocket(USceneComponent* InParent, FName InSocketName)
 	ItemMesh->AttachToComponent(InParent, FAttachmentTransformRules::SnapToTargetIncludingScale, InSocketName);
 }
 
-// called by SlashCharacter when picking up Weapon
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
+void AWeapon::PlayEquipSound()
 {
-	SetOwner(NewOwner);
-	SetInstigator(NewInstigator); // used to specify who is doing damage with this weapon
-	AttachMeshToSocket(InParent, InSocketName);
-	ItemState = EItemState::EIS_Equipped;
-
 	if (EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
 	}
+}
 
+void AWeapon::DestroySphereCollision()
+{
 	if (Sphere)
 	{
 		//Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Sphere->DestroyComponent();
 	}
+}
 
+void AWeapon::DeactivateEmbers()
+{
 	if (EmbersEffect)
 	{
 		EmbersEffect->Deactivate();
 	}
 }
 
-void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                              const FHitResult& SweepResult)
+// called by SlashCharacter when picking up Weapon
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
 {
-	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	ItemState = EItemState::EIS_Equipped;
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator); // used to specify who is doing damage with this weapon
+	AttachMeshToSocket(InParent, InSocketName);
+	DestroySphereCollision();
+	PlayEquipSound();
+	DeactivateEmbers();
 }
 
-void AWeapon::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AWeapon::ExecuteGetHit(FHitResult BoxHit)
 {
-	Super::OnSphereOverlapEnd(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+	if (Cast<IHitInterface>(BoxHit.GetActor()))
+	{
+		IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
+	}
+}
+
+bool AWeapon::ActorIsSameType(AActor* OtherActor)
+{
+	return GetOwner()->ActorHasTag(FName("Enemy")) && OtherActor->ActorHasTag(FName("Enemy"));
 }
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// Ignore hits on other enemies and self - when we overlap
+	if (ActorIsSameType(OtherActor)) return;
+		
+	FHitResult BoxHit;
+	BoxTrace(BoxHit);
+
+	if (BoxHit.GetActor())
+	{
+		// Ignore hits on other enemies and self - when we hit
+		if (ActorIsSameType(BoxHit.GetActor())) return;
+		
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigatorController(),
+			this,
+			UDamageType::StaticClass()
+		);
+
+		ExecuteGetHit(BoxHit);
+		
+		// BP function that drives our custom physics fields - used in course for the normal fields here too
+		CreateFields(BoxHit.ImpactPoint);
+	}
+}
+
+void AWeapon::BoxTrace(FHitResult& BoxHit)
 {
 	const FVector Start = BoxTraceStart->GetComponentLocation();
 	const FVector End = BoxTraceEnd->GetComponentLocation();
@@ -88,40 +128,19 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		ActorsToIgnore.AddUnique(Actor);
 	}
 
-	FHitResult BoxHit;
-
 	UKismetSystemLibrary::BoxTraceSingle(
 		this,
 		Start,
 		End,
-		FVector(5.f, 5.f, 5.f),
+		BoxTraceExtent,
 		BoxTraceStart->GetComponentRotation(),
 		TraceTypeQuery1,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::None,
+		bShowBoxDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None,
 		BoxHit,
 		true
 	);
-
-	if (BoxHit.GetActor())
-	{
-		UGameplayStatics::ApplyDamage(
-			BoxHit.GetActor(),
-			Damage,
-			GetInstigatorController(),
-			this,
-			UDamageType::StaticClass()
-		);
-
-		if (Cast<IHitInterface>(BoxHit.GetActor()))
-		{
-			IHitInterface::Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
-		}
-		// Make sure we only register one hit on an enemy per swing
-		IgnoreActors.AddUnique(BoxHit.GetActor());
-
-		// BP function that drives our custom physics fields
-		CreateFields(BoxHit.ImpactPoint);
-	}
+	// Make sure we only register one hit on an enemy per swing
+	IgnoreActors.AddUnique(BoxHit.GetActor());
 }

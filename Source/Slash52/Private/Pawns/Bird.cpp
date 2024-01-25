@@ -33,16 +33,15 @@ ABird::ABird()
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(SpringArm);
 
-	// AutoPossessPlayer = EAutoReceiveInput::Player0;
-	// bUseControllerRotationPitch = true;
-	// bUseControllerRotationYaw = true;
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
 }
 
 void ABird::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Edited out for testing helping someone. Put back later.
+	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
@@ -63,6 +62,7 @@ void ABird::Move(const FInputActionValue& Value)
 	}
 }
 
+
 void ABird::Look(const FInputActionValue& Value)
 {
 	const FVector2D CurrentValue = Value.Get<FVector2D>();
@@ -82,13 +82,13 @@ void ABird::Tick(float DeltaTime)
 void ABird::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Use console: showdebug enhancedinput in PiE to check values without logging 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABird::Move);
-
+	
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABird::Look);
 	}

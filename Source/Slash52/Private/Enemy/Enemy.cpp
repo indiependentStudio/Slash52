@@ -92,6 +92,9 @@ void AEnemy::BeginPlay()
 	if (PawnSensingComponent) PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
 
 	InitializeEnemy();
+
+	// To get the enemy to ignore hits on other enemies (and self?) we use a tag
+	Tags.Add(FName("Enemy"));
 }
 
 void AEnemy::Die()
@@ -164,7 +167,7 @@ void AEnemy::PawnSeen(APawn* SeenPawn)
 		EnemyState != EEnemyState::EES_Dead &&
 		EnemyState != EEnemyState::EES_Chasing &&
 		EnemyState < EEnemyState::EES_Attacking &&
-		SeenPawn->ActorHasTag(FName("SlashCharacter"));
+		SeenPawn->ActorHasTag(FName("EngageableTarget"));
 
 	if (bShouldChaseTarget)
 	{
