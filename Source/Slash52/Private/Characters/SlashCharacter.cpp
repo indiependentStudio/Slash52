@@ -233,8 +233,9 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
-void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint)
+void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 {
-	Super::GetHit_Implementation(ImpactPoint);
+	Super::GetHit_Implementation(ImpactPoint, Hitter);
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision); // edge case where interrupted attack leaves weapon active
 	ActionState = EActionState::EAS_HitReaction;
 }
