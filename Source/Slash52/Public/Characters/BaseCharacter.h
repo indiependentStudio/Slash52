@@ -57,6 +57,8 @@ protected:
 	virtual int32 PlayAttackMontage();
 	virtual int32 PlayDeathMontage();
 
+	void StopAttackMontage();
+
 	UPROPERTY(VisibleAnywhere, Category="Weapon")
 	TObjectPtr<AWeapon> EquippedWeapon;
 

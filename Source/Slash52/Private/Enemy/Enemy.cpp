@@ -142,7 +142,7 @@ void AEnemy::MoveToTarget(AActor* Target)
 
 AActor* AEnemy::ChoosePatrolTarget()
 {
-	// make sure we don't keep randomly selected the TargetPoint we're already at
+	// make sure we don't keep randomly selecting the TargetPoint we're already at
 	TArray<AActor*> ValidTargets;
 	for (AActor* Target : PatrolTargets)
 	{
@@ -321,6 +321,9 @@ void AEnemy::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 	Super::GetHit_Implementation(ImpactPoint, Hitter);
 	if (!IsDead()) ShowHealthBar();
 	ClearPatrolTimer(); // edge case where Enemy stops attacking and goes back to patrol
+	ClearAttackTimer();
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+	StopAttackMontage();
 }
 
 // Called by Weapon's ApplyDamage
@@ -329,7 +332,14 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 	HandleDamage(DamageAmount);
 	CombatTarget = EventInstigator->GetPawn();
-	ChaseTarget();
+	if (IsInsideAttackRadius())
+	{
+		EnemyState = EEnemyState::EES_Attacking;
+	} else if (IsOutsideAttackRadius())
+	{
+		ChaseTarget();
+	}
+		
 	return DamageAmount;
 }
 

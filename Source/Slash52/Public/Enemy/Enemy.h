@@ -67,6 +67,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	float DeathLifeSpan = 8.f;
 
+	UPROPERTY(BlueprintReadOnly, Category="AI | Combat")
+	TObjectPtr<AActor> CombatTarget;
+
+	// I suddenly can't see Patrol Targets on my Paladin instances, so moving to Protected
+	// Current Patrol Target - temp exposed to BP Graph to work on Enemy seeing Player
+	UPROPERTY(EditInstanceOnly, Category="AI | Patrol", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
+	TObjectPtr<AActor> PatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category="AI | Patrol")
+	TArray<TObjectPtr<AActor>> PatrolTargets;
+
+
 private:
 	/* AI Behavior */
 	void InitializeEnemy();
@@ -108,9 +120,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<AAIController> EnemyController;
 
-	UPROPERTY()
-	TObjectPtr<AActor> CombatTarget;
-
 	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	double CombatRadius = 1500.f;
 
@@ -126,13 +135,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="AI | Navigation")
 	double PatrolRadius = 200.f;
 
-	// Current Patrol Target - temp exposed to BP Graph to work on Enemy seeing Player
-	UPROPERTY(EditInstanceOnly, Category="AI | Navigation", BlueprintReadWrite, meta=(AllowPrivateAccess=true))
-	TObjectPtr<AActor> PatrolTarget;
-
-	UPROPERTY(EditInstanceOnly, Category="AI | Navigation")
-	TArray<TObjectPtr<AActor>> PatrolTargets;
-
+	
 	UPROPERTY(EditAnywhere, Category="Weapon")
 	TSubclassOf<AWeapon> WeaponClass;
 };
