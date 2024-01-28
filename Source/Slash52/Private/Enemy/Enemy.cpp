@@ -317,11 +317,9 @@ void AEnemy::Tick(float DeltaTime)
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
+	Super::GetHit_Implementation(ImpactPoint);
 	ShowHealthBar();
-	if (IsAlive()) DirectionalHitReact(ImpactPoint);
-	else if (AttributeComponent) Die();
-	PlayHitSound(ImpactPoint);
-	SpawnHitParticles(ImpactPoint);
+	
 }
 
 // Called by Weapon's ApplyDamage

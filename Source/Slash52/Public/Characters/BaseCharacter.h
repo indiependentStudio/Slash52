@@ -30,6 +30,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/* <IHitInterface> */
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	/* </IHitInterface> */
+
 	virtual void Attack();
 	virtual bool CanAttack();
 	virtual void HandleDamage(float DamageAmount);
