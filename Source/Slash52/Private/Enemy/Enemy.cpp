@@ -100,6 +100,7 @@ void AEnemy::BeginPlay()
 void AEnemy::Die()
 {
 	EnemyState = EEnemyState::EES_Dead;
+	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision); // Can't hit Echo while dying
 	PlayDeathMontage();
 	ClearAttackTimer();
 	HideHealthBar();
@@ -318,8 +319,8 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
 	Super::GetHit_Implementation(ImpactPoint);
-	ShowHealthBar();
-	
+	if (!IsDead()) ShowHealthBar();
+	ClearPatrolTimer(); // edge case where Enemy stops attacking and goes back to patrol
 }
 
 // Called by Weapon's ApplyDamage
