@@ -67,9 +67,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category="AI | Combat")
 	float DeathLifeSpan = 8.f;
 
-	UPROPERTY(BlueprintReadOnly, Category="AI | Combat")
-	TObjectPtr<AActor> CombatTarget;
-
 	// I suddenly can't see Patrol Targets on my Paladin instances, so moving to Protected
 	// Current Patrol Target - temp exposed to BP Graph to work on Enemy seeing Player
 	UPROPERTY(EditInstanceOnly, Category="AI | Patrol", BlueprintReadWrite, meta=(AllowPrivateAccess=true))

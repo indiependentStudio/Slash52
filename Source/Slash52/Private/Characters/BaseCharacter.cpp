@@ -9,6 +9,7 @@
 #include "Items/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Slash52/DebugMacros.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -57,6 +58,29 @@ void ABaseCharacter::StopAttackMontage()
 	{
 		AnimInstance->Montage_Stop(0.25f, AttackMontage);
 	}
+}
+
+FVector ABaseCharacter::GetTranslationWarpTarget()
+{
+	if (CombatTarget == nullptr) return FVector();
+	const FVector CombatTargetLocation = CombatTarget->GetActorLocation();
+	const FVector Location = GetActorLocation();
+
+	// get the normalized vector from me to the combat target location and scale it
+	FVector TargetToMe = (Location - CombatTargetLocation).GetSafeNormal();
+	TargetToMe *= WarpTargetDistance;
+
+	//DRAW_SPHERE(CombatTargetLocation + TargetToMe)
+	return CombatTargetLocation + TargetToMe;
+}
+
+FVector ABaseCharacter::GetRotationWarpTarget()
+{
+	if (CombatTarget)
+	{
+		return CombatTarget->GetActorLocation();
+	}
+	return FVector();
 }
 
 int32 ABaseCharacter::PlayDeathMontage()

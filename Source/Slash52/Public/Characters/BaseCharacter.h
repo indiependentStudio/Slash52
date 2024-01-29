@@ -59,6 +59,19 @@ protected:
 
 	void StopAttackMontage();
 
+	UPROPERTY(BlueprintReadOnly, Category="AI | Combat")
+	TObjectPtr<AActor> CombatTarget;
+
+	UPROPERTY(EditAnywhere, Category="AI | Combat")
+	double WarpTargetDistance = 75.f;
+	
+	UFUNCTION(BlueprintCallable)
+	FVector GetTranslationWarpTarget();
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetRotationWarpTarget();
+	
+
 	UPROPERTY(VisibleAnywhere, Category="Weapon")
 	TObjectPtr<AWeapon> EquippedWeapon;
 
